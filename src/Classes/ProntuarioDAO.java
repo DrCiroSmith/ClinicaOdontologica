@@ -17,7 +17,7 @@ public class ProntuarioDAO {
     private Connection con;
 
     public ProntuarioDAO() {
-        this.con = new Conecta().getConexao();
+        this.con = Conecta.getConexao();
     }
     
     
@@ -25,13 +25,12 @@ public class ProntuarioDAO {
     public Prontuario pesquisarProntuario(int id){
         Prontuario p = new Prontuario();
         try{
-            Connection con=Conecta.getConexao();
             Statement stmt=con.createStatement();
             String sql="SELECT * FROM prontuario WHERE idPaciente="+id;
             stmt.execute(sql);
             ResultSet rs=stmt.getResultSet();
             while(rs.next()){
-                p.setIdPaciente(rs.getInt("idProntuario"));
+                p.setIdProntuario(rs.getInt("idProntuario"));
                 p.setIdPaciente(rs.getInt("idPaciente"));
                 p.setDescricao(rs.getString("descricao"));
                 
@@ -39,8 +38,8 @@ public class ProntuarioDAO {
             }
             rs.close();
             stmt.close();
-            con.close();
         }catch(Exception e){
+            System.err.println("Erro ao pesquisar prontuário: " + e.getMessage());
         }
         return p;
     }
@@ -48,13 +47,11 @@ public class ProntuarioDAO {
     public String gravarProntuario(Prontuario prontuario) {
         String resp = "";
         try {
-            Connection con = Conecta.getConexao();
             Statement stmt = con.createStatement();
-            String sql = "INSERT INTO prontuario(idPaciente, descricao) ";
+            String sql = "INSERT INTO prontuario (idPaciente, descricao) ";
             sql += "VALUES ('" + prontuario.getIdPaciente()+"','" + prontuario.getDescricao()+"')";
             stmt.executeUpdate(sql);
             stmt.close();
-            con.close();
             resp = "OK";
         } catch (Exception e) {
             resp = e.toString();
@@ -66,13 +63,10 @@ public class ProntuarioDAO {
     public String editarProntuario(Prontuario prontuario) {
         String resp = "";
         try {
-            Connection con = Conecta.getConexao();
             Statement stmt = con.createStatement();
-            String sql = "UPDATE prontuario SET descricao='" + prontuario.getDescricao()+ "'WHERE id=" + prontuario.getIdPaciente();
-
+            String sql = "UPDATE prontuario SET descricao='" + prontuario.getDescricao()+ "' WHERE idProntuario=" + prontuario.getIdProntuario();
             stmt.executeUpdate(sql);
             stmt.close();
-            con.close();
             resp = "OK";
         } catch (Exception e) {
             resp = e.toString();

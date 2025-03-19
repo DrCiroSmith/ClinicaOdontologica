@@ -93,13 +93,8 @@ public class frmAgendaGeral extends javax.swing.JFrame {
         }
     }
     
-       private static void criarMensagemSucesso(){
-        frmImagemSucesso form = new frmImagemSucesso();
-        form.setVisible(true);
-         form.setLocationRelativeTo(null);
-    }
 
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 

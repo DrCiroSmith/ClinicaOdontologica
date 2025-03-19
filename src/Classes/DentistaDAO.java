@@ -17,7 +17,7 @@ public class DentistaDAO {
     private Connection con;
 
     public DentistaDAO() {
-        this.con = new Conecta().getConexao();
+        this.con = Conecta.getConexao();
     }
     public String gravarDentista(Dentista dentista) {
         String resp = "";

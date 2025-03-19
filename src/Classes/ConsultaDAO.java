@@ -7,8 +7,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ConsultaDAO {
 
@@ -53,20 +51,20 @@ public class ConsultaDAO {
         Consulta d = new Consulta();
         try {
             Connection con = Conecta.getConexao();
-            Statement stmt = con.createStatement();
-            String sql = "SELECT * FROM consulta WHERE id=" + id;
-            stmt.executeQuery(sql);
-            ResultSet rs = stmt.getResultSet();
+            String sql = "SELECT * FROM consulta WHERE id=?";
+            PreparedStatement pstm = con.prepareStatement(sql);
+            pstm.setInt(1, id);
+            ResultSet rs = pstm.executeQuery();
             while (rs.next()) {
                 d.setIdConsulta(rs.getInt("id"));
                 d.setDentistaId(rs.getInt("dentistaId"));
                 d.setHoraConsulta(rs.getString("hora"));
                 d.setDataConsulta(rs.getString("dataConsulta"));
-                d.setValorConsulta(rs.getFloat("valorConsulta"));
+                d.setValorConsulta(rs.getFloat("valor"));  // Fixed column name
                 d.setPacienteId(rs.getInt("pacienteID"));
             }
             rs.close();
-            stmt.close();
+            pstm.close();
             con.close();
         } catch (Exception e) {
             d = null;
@@ -82,10 +80,10 @@ public class ConsultaDAO {
             Connection con = Conecta.getConexao();
             PreparedStatement pstm;
             pstm = con.prepareStatement("UPDATE consulta set dataConsulta = ?, hora = ?, valor = ? where id = ? ");
-            pstm.setString(1,consulta.getDataConsulta());
-            pstm.setString(2,consulta.getHoraConsulta());
-            pstm.setString(3,String.valueOf(consulta.getValorConsulta()));
-            pstm.setString(4,String.valueOf(consulta.getIdConsulta()));
+            pstm.setString(1, consulta.getDataConsulta());
+            pstm.setString(2, consulta.getHoraConsulta());
+            pstm.setFloat(3, consulta.getValorConsulta());  // Use setFloat for numeric value
+            pstm.setInt(4, consulta.getIdConsulta());  // Use setInt for ID
             
             pstm.executeUpdate();
             pstm.close();
@@ -97,23 +95,23 @@ public class ConsultaDAO {
         return resp;
     }
 
-    public List horasIndisponiveis(String data, int dentista){
-	List<String> lista = new ArrayList<String>();
-	String query = "SELECT hora FROM consulta WHERE dentistaId="+dentista+" and dataConsulta='"+data+"'";
-	try {
+    public List<String> horasIndisponiveis(String data, int dentista) {  // Removed unnecessary annotation
+        List<String> lista = new ArrayList<String>();
+        String query = "SELECT hora FROM consulta WHERE dentistaId="+dentista+" and dataConsulta='"+data+"'";
+        try {
             Connection con = Conecta.getConexao();
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(query);
             while(rs.next()){
-		lista.add(rs.getString("hora"));
+                lista.add(rs.getString("hora"));
             }
             stmt.close();
             rs.close();
             con.close();
-	}
-	catch(SQLException e){
-		e.printStackTrace();
-	}
-	return lista;
+        }
+        catch(SQLException e){
+            e.printStackTrace();
+        }
+        return lista;
     }
 }

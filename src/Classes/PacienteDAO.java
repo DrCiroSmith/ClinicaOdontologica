@@ -14,23 +14,35 @@ public class PacienteDAO {
     private Connection con;
 
     public PacienteDAO() {
-        this.con = new Conecta().getConexao();
+        this.con = Conecta.getConexao();
     }
 
     public String gravarPaciente(Paciente paciente) {
         String resp = "";
-        try {
-            Connection con = Conecta.getConexao();
-            Statement stmt = con.createStatement();
-            String sql = "INSERT INTO paciente(nome, endereco, logradouro, numero, complemento, cep, bairro, email, celular, telefone, estado, cidade, cpf, rg, nascimento) ";
-            sql += "VALUES ('" + paciente.getNome() +"','" + paciente.getRua()+ "','" + paciente.getRua()+ "','" + paciente.getNumero()+ "', '" + paciente.getComplemento()+ "', '" + paciente.getCep()+ "','"
-                    + paciente.getBairro()+"','" + paciente.getEmail()+"','" + paciente.getCelular()+"','" + paciente.getTelefone()+"','" + paciente.getEstado()+
-                    "','" + paciente.getCidade()+"','" + paciente.getCpf()+"','" + paciente.getRg()+"','" + paciente.getNascimento()+"')";
-            stmt.executeUpdate(sql);
-            stmt.close();
-            con.close();
+        String sql = "INSERT INTO paciente(nome, endereco, logradouro, numero, complemento, cep, bairro, email, celular, telefone, estado, cidade, cpf, rg, nascimento) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try (Connection con = Conecta.getConexao();
+             PreparedStatement pstmt = con.prepareStatement(sql)) {
+            
+            pstmt.setString(1, paciente.getNome());
+            pstmt.setString(2, paciente.getRua());
+            pstmt.setString(3, paciente.getRua());
+            pstmt.setString(4, paciente.getNumero());
+            pstmt.setString(5, paciente.getComplemento());
+            pstmt.setString(6, paciente.getCep());
+            pstmt.setString(7, paciente.getBairro());
+            pstmt.setString(8, paciente.getEmail());
+            pstmt.setString(9, paciente.getCelular());
+            pstmt.setString(10, paciente.getTelefone());
+            pstmt.setString(11, paciente.getEstado());
+            pstmt.setString(12, paciente.getCidade());
+            pstmt.setString(13, paciente.getCpf());
+            pstmt.setString(14, paciente.getRg());
+            pstmt.setString(15, paciente.getNascimento());
+            
+            pstmt.executeUpdate();
             resp = "OK";
-        } catch (Exception e) {
+        } catch (SQLException e) {
             resp = e.toString();
         }
         return resp;
@@ -38,30 +50,30 @@ public class PacienteDAO {
 
     public String editarPaciente(Paciente paciente) {
         String resp = "";
-        try {
-            Connection con = Conecta.getConexao();
-            Statement stmt = con.createStatement();
-            String sql = "UPDATE paciente SET nome='" + paciente.getNome() + "',"
-                    + " endereco='" + paciente.getRua()+ "',"
-                     + " logradouro='" + paciente.getRua()+ "',"
-                     + " numero='" + paciente.getNumero()+ "',"
-                     + " complemento='" + paciente.getComplemento()+ "',"
-                     + " cep='" + paciente.getCep()+ "',"
-                    + " bairro='" + paciente.getBairro()+ "',"
-                    + " email='" + paciente.getEmail()+ "',"
-                    + " celular='" + paciente.getCelular()+ "',"
-                    + " telefone='" + paciente.getTelefone()+ "',"
-                    + " estado='" + paciente.getEstado()+ "',"
-                    + " cidade='" + paciente.getCidade()+ "',"
-                    + " cpf='" + paciente.getCpf()+ "',"
-                    + " rg='" + paciente.getRg() + "',"
-                    + " nascimento='" + paciente.getNascimento()+ "'WHERE id=" + paciente.getId();
-
-            stmt.executeUpdate(sql);
-            stmt.close();
-            con.close();
+        String sql = "UPDATE paciente SET nome=?, endereco=?, logradouro=?, numero=?, complemento=?, cep=?, bairro=?, email=?, celular=?, telefone=?, estado=?, cidade=?, cpf=?, rg=?, nascimento=? WHERE id=?";
+        try (Connection con = Conecta.getConexao();
+             PreparedStatement pstmt = con.prepareStatement(sql)) {
+            
+            pstmt.setString(1, paciente.getNome());
+            pstmt.setString(2, paciente.getRua());
+            pstmt.setString(3, paciente.getRua());
+            pstmt.setString(4, paciente.getNumero());
+            pstmt.setString(5, paciente.getComplemento());
+            pstmt.setString(6, paciente.getCep());
+            pstmt.setString(7, paciente.getBairro());
+            pstmt.setString(8, paciente.getEmail());
+            pstmt.setString(9, paciente.getCelular());
+            pstmt.setString(10, paciente.getTelefone());
+            pstmt.setString(11, paciente.getEstado());
+            pstmt.setString(12, paciente.getCidade());
+            pstmt.setString(13, paciente.getCpf());
+            pstmt.setString(14, paciente.getRg());
+            pstmt.setString(15, paciente.getNascimento());
+            pstmt.setInt(16, paciente.getId());
+            
+            pstmt.executeUpdate();
             resp = "OK";
-        } catch (Exception e) {
+        } catch (SQLException e) {
             resp = e.toString();
         }
         return resp;

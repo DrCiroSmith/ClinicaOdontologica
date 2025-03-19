@@ -12,9 +12,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -112,7 +110,7 @@ public class frmAgendarConsulta extends javax.swing.JFrame {
    
     }
 
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -954,7 +952,7 @@ public class frmAgendarConsulta extends javax.swing.JFrame {
     }//GEN-LAST:event_jcbHoraActionPerformed
 
     private void txtDataKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtDataKeyReleased
-        List hrs;
+        List<String> hrs;
         hrs= new ConsultaDAO().horasIndisponiveis(txtData.getText(), tblDentista.getSelectionModel().getMinSelectionIndex()+1);
         for (int x = 0; x < hrs.size(); x++) {
             for (int i = 0; i < jcbHora.getItemCount(); i++) {

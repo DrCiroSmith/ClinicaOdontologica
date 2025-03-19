@@ -7,7 +7,6 @@ package Classes;
 
 import Formularios.frmImagemErro;
 import Formularios.frmImagemSucesso;
-import java.awt.Dimension;
 import java.awt.Toolkit;
 import javax.swing.JFrame;
 

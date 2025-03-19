@@ -15,16 +15,19 @@ import java.net.URLConnection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.List;
-import Formularios.frmPaciente;
 import java.awt.Font;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
+import java.net.URLEncoder;
+import java.io.UnsupportedEncodingException;
 
 public class frmDentista extends javax.swing.JFrame {
+    // Remove duplicate and unused declarations
     Color azulPadrao = new Color(129, 167, 255);
     Color azulClaro = new Color(226, 235, 255);
     Color azulClaroo = new Color(139, 215, 255);
@@ -49,8 +52,8 @@ public class frmDentista extends javax.swing.JFrame {
         }
     }
     public boolean verificaPreenchimento() {
-        if (txtEmail.getText().equals("") || txtEmail.getText().equals("") || txtNascimento.getText().equals("  /  /    ")
-                 || txtValorConsulta.getText().equals("   .  ")) {
+        if (txtEmail.getText().isEmpty() || txtNome1.getText().isEmpty() || txtNascimento.getText().equals("  /  /    ")
+                 || txtValorConsulta.getText().isEmpty()) {
             return false;
         }
         return true;
@@ -128,44 +131,86 @@ public class frmDentista extends javax.swing.JFrame {
         txtEmail.setEnabled(false);
         txtCidade.setEnabled(false);
     }
-    public void buscarCep(String cep){
-        String json;        
-
+    public void buscarCep(String cep) {
         try {
-            URL url = new URL("http://viacep.com.br/ws/"+ cep +"/json");
+            // Use the correct ViaCEP API URL for JSON response
+            String apiUrl = "https://viacep.com.br/ws/" + cep + "/json/";
+            URL url = new URL(apiUrl);
             URLConnection urlConnection = url.openConnection();
+            urlConnection.setRequestProperty("User-Agent", "Mozilla/5.0");
             InputStream is = urlConnection.getInputStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
 
             StringBuilder jsonSb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                jsonSb.append(line);
+            }
+            br.close();
+            String jsonResponse = jsonSb.toString();
+            
+            // Check for error in ViaCEP response
+            if (jsonResponse.contains("\"erro\": true")) {
+                JOptionPane.showMessageDialog(null, "CEP não encontrado.", "Erro", JOptionPane.ERROR_MESSAGE);
+                limparCamposDeEndereco();
+                return;
+            }
+            
+            // Extract data from JSON response
+            String logradouro = extractJsonValue(jsonResponse, "logradouro");
+            String bairro = extractJsonValue(jsonResponse, "bairro");
+            String cidade = extractJsonValue(jsonResponse, "localidade");
+            String estado = extractJsonValue(jsonResponse, "uf");
+            
+            // Set extracted values to text fields
+            txtRua.setText(logradouro != null ? logradouro : "");
+            txtBairro.setText(bairro != null ? bairro : "");
+            txtCidade.setText(cidade != null ? cidade : "");
+            txtEstado.setText(estado != null ? estado : "");
 
-            br.lines().forEach(l -> jsonSb.append(l.trim()));
-            json = jsonSb.toString();
-            
-            // JOptionPane.showMessageDialog(null, json);
-            
-            json = json.replaceAll("[{},:]", "");
-            json = json.replaceAll("\"", "\n");                       
-            String array[] = new String[30];
-            array = json.split("\n");
-            
-            // JOptionPane.showMessageDialog(null, array);
-                             
-            logradouro = array[7];            
-            bairro = array[15];
-            cidade = array[19]; 
-            uf = array[23];
-            
-            txtRua.setText(logradouro);
-            txtBairro.setText(bairro);
-            txtCidade.setText(cidade);
-            txtEstado.setText(uf);
-            //JOptionPane.showMessageDialog(null, logradouro + " " + bairro + " " + cidade + " " + uf);
-            
+        } catch (UnsupportedEncodingException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao codificar o CEP: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Erro de conexão ou ao processar a requisição: " + e.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            limparCamposDeEndereco();
         }
     }
+
+    // Helper method to extract values from JSON response
+    private String extractJsonValue(String json, String key) {
+        String keyWithQuotes = "\"" + key + "\"";
+        int keyIndex = json.indexOf(keyWithQuotes);
+        if (keyIndex == -1) return null;
+        
+        int valueStartIndex = json.indexOf(":", keyIndex) + 1;
+        while (json.charAt(valueStartIndex) == ' ') valueStartIndex++; // Skip spaces
+        
+        boolean isQuotedValue = json.charAt(valueStartIndex) == '"';
+        int valueEndIndex;
+        
+        if (isQuotedValue) {
+            valueStartIndex++; // Skip opening quote
+            valueEndIndex = json.indexOf("\"", valueStartIndex);
+        } else {
+            valueEndIndex = json.indexOf(",", valueStartIndex);
+            if (valueEndIndex == -1) {
+                valueEndIndex = json.indexOf("}", valueStartIndex);
+            }
+        }
+        
+        if (valueEndIndex == -1) return null;
+        
+        return json.substring(valueStartIndex, valueEndIndex);
+    }
+
+    public void limparCamposDeEndereco() {
+        txtRua.setText("");
+        txtBairro.setText("");
+        txtCidade.setText("");
+        txtEstado.setText("");
+    }
+
     private void carregaTabela() {
         DefaultTableModel modelo = (DefaultTableModel) tblDentista.getModel();
         modelo.setNumRows(0);
@@ -219,7 +264,7 @@ public class frmDentista extends javax.swing.JFrame {
      * WARNING: Do NOT modify this code. The content of this method is always
      * regenerated by the Form Editor.
      */
-    @SuppressWarnings("unchecked")
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
@@ -764,14 +809,15 @@ public class frmDentista extends javax.swing.JFrame {
         txtNome1.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         txtNome1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        txtPesquisaDentista1.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
-        txtPesquisaDentista1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        txtPesquisaDentista1.addActionListener(new java.awt.event.ActionListener() {
+        JTextField txtPesquisaDentista12 = txtPesquisaDentista1;
+        txtPesquisaDentista12.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
+        txtPesquisaDentista12.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
+        txtPesquisaDentista12.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtPesquisaDentista1ActionPerformed(evt);
             }
         });
-        txtPesquisaDentista1.addKeyListener(new java.awt.event.KeyAdapter() {
+        txtPesquisaDentista12.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 txtPesquisaDentista1KeyPressed(evt);
             }
@@ -1070,11 +1116,11 @@ public class frmDentista extends javax.swing.JFrame {
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                                             .addComponent(jLabel13)
                                             .addComponent(txtCro, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
-                                            .addComponent(txtCelular1, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE))))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 20, Short.MAX_VALUE)
+                                            .addComponent(txtCelular1, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)))))))
+                        .addGap(20, 20, Short.MAX_VALUE)
                         .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel4))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
+                .addGap(23)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1099,8 +1145,8 @@ public class frmDentista extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 210, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtPesquisaDentista1, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(txtPesquisaDentista12, javax.swing.GroupLayout.PREFERRED_SIZE, 355, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1170,7 +1216,7 @@ public class frmDentista extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jLabel5)
                                 .addGap(0, 0, 0)
-                                .addComponent(txtPesquisaDentista1, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtPesquisaDentista12, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(29, 29, 29)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -1285,7 +1331,7 @@ public class frmDentista extends javax.swing.JFrame {
 
     private void btnSalvarDentistaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalvarDentistaActionPerformed
         if (verificaPreenchimento()) {
-            if (situacao == "cadastro") {
+            if ("cadastro".equals(situacao)) {
                 Dentista dentista = new Dentista(txtNome1.getText(), txtRg.getText(), txtCpf.getText(), txtRua.getText(), txtRua.getText(), txtNumero.getText(), txtComplemento.getText(),
                          txtCep.getText(), txtBairro.getText(), txtEstado.getText(),  txtCidade.getText(),
                         txtCro.getText(), txtEmail.getText(), txtCelular1.getText(), txtTelefone.getText(),txtNascimento.getText(), txtNumeroConsultorio.getText(), txtValorConsulta.getText(),
@@ -1312,11 +1358,14 @@ public class frmDentista extends javax.swing.JFrame {
                     btnSalvarDentista.setEnabled(false);
                     btnNovoDentista.setEnabled(true);
                 }
-            } else if (situacao == "edicao") {
+            } else if ("edicao".equals(situacao)) {
+                 // Create dentist with existing constructor and set ID manually
+                 int id = Integer.parseInt(txtId.getText());
                  Dentista dentista = new Dentista(txtNome1.getText(), txtRg.getText(), txtCpf.getText(), txtRua.getText(), txtRua.getText(), txtNumero.getText(), txtComplemento.getText(),
                          txtCep.getText(), txtBairro.getText(), txtEstado.getText(),  txtCidade.getText(),
                         txtCro.getText(), txtEmail.getText(), txtCelular1.getText(), txtTelefone.getText(),txtNascimento.getText(), txtNumeroConsultorio.getText(), txtValorConsulta.getText(),
                 txtLogin.getText(), txtSenha.getText());
+                 dentista.setId(id); // Set the ID after creating the dentist object
                 
                     String resp = new DentistaDAO().editarDentista(dentista);
                     if (resp.equals("OK")) {

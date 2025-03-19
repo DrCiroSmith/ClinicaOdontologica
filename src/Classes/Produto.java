@@ -40,4 +40,12 @@ public class Produto {
     public void setFabricante(String fabricante) {
         this.fabricante = fabricante;
     }
+    
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }
