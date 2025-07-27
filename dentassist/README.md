@@ -10,6 +10,9 @@ It performs offline multimodal inference using MedGemma via the MLC-LLM runtime.
    resulting shared library in `android/` and `ios/` folders.
 4. Run `flutter pub get` to fetch Dart dependencies.
 
+For a step-by-step walkthrough of building and running DentAssist, see
+[USAGE.md](USAGE.md).
+
 ## Quantization Flags
 The model is converted to `medgemma_4b_q4.gguf` using:
 ```

@@ -1,4 +1,3 @@
-cat <<'EOF' > lib/widgets/ChatScreen.dart
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
