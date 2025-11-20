@@ -24,3 +24,9 @@ hs_err_pid*
 /nbproject/private/
 /build/
 /dist/
+# Flutter build outputs
+build/
+.dart_tool/
+flutter_*
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
